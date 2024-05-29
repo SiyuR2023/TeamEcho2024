@@ -10,7 +10,7 @@ These improvements aim to create a more robust, scalable, and user-friendly syst
 
 - Siyu
   
-- Edward
+- Edward Nkansah
   
 - Roope
   
