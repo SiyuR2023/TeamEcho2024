@@ -25,10 +25,10 @@ def split_pdf(file_path, output_dir):
         print(f'Created: {output_filename}')
 
 if __name__ == "__main__":
-    # Path to the PDF file you want to split
-    pdf_file_path = 'pdf_uploadedFiles/centurion.pdf'  # Update 'example.pdf' to the actual file name
+    # Path to the PDF file to split
+    pdf_file_path = 'pdf_uploadedFiles/centurion.pdf'  
     
-    # Directory where the single page PDFs will be saved
+    # Directory to save the single page PDFs
     output_directory = 'pdf_outputFiles'
     
     split_pdf(pdf_file_path, output_directory)
