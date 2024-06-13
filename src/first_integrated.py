@@ -93,10 +93,13 @@ def get_manufacture_model(description: str):
 
 
 def contains_keyword(first_row, keyword):
+    
     if first_row is not None:
         row_text = ' '.join(cell if cell is not None else '' for cell in first_row)
+        
         if row_text.lower().startswith(keyword.lower()):
             return True
+        
     return False
 
 
@@ -129,7 +132,7 @@ def extract_first_integrated_pdf(pdf_path):
                 continue
 
             first_row = page_tables[0][0]
-            print(first_row)
+            
             if contains_keyword(first_row, "Name & Address of employer for Whom the examination was made"):
                 process_table_type1(page_tables, extraction_info)
             elif contains_keyword(first_row, "Date of Thorough Examination"):
@@ -147,7 +150,9 @@ def extract_first_integrated_pdf(pdf_path):
 
 
 def process_table_type1(page_tables, extraction_info):
+    print("<------------extracting first_integrated pdf Type1------------>")
     try:
+        
         id_number, description = None, None
         id_pattern = re.compile(r'(\(\w+\)\s*)?[A-Z]{3}\d+')
         swl_pattern = re.compile(r'(\d+\.\d+)\s+(Tonnes|Kilos)\s', re.IGNORECASE)
@@ -294,6 +299,7 @@ def process_table_type1(page_tables, extraction_info):
 
 
 def process_table_type2(table, extraction_info):
+    print("<------------extracting first_integrated pdf Type2------------>")
     try:
         page_errors = dict()
         page_info = {}
@@ -406,6 +412,7 @@ def process_table_type2(table, extraction_info):
 
 
 def process_table_type3(table, extraction_info):
+    print("<------------extracting first_integrated pdf Type3------------>")
     try:
         page_info = dict()
         page_errors = dict()
