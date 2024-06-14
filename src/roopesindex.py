@@ -27,7 +27,7 @@ def split_pdf(pdf_path, output_dir):
         text += page.extract_text()
         x = re.split("\n|,|:", text)
         e = [e.lower() for e in x]
-        y = x.index('report number')
+        y = e.index('report number')
         z = x[y+1].replace(' ','')
         #print("Report number: ",x[1])
         #print("ID number: ",x[8])
