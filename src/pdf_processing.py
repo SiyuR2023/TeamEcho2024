@@ -3,7 +3,6 @@ import pdfplumber
 import centurion_extraction
 import first_integrated
 
-cert_no = page_info["Certificate No"]
 
 def pdf_to_text(pdf_path):
     
