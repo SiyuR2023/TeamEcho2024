@@ -114,39 +114,39 @@ def add_six_months(date_str):
     return next_inspection_date_str
 
 # Call to the First Integrated PDF
-def extract_first_integrated_pdf(pdf_path, i):
+def extract_first_integrated_pdf(pdf_path):
     print("<------------extracting first_integrated pdf------------>")
     pdf_doc = pdfplumber.open(pdf_path)
     extraction_info = dict()
     page_errors = dict()
+    for i in range(0, len(pdf_doc.pages)):
+        try:
+            # for page_number, page in enumerate(pdf_doc.pages()):
+            page = pdf_doc.pages[i]
+            page_tables = page.extract_tables()
+            #print("page number:", i)
+            #print("page tables:", page_tables)
+            
+            if not page_tables:
+                page_errors[i+1] = f" No tables found on page {i+1}. Skipping..."
+                continue
 
-    try:
-        # for page_number, page in enumerate(pdf_doc.pages()):
-        page = pdf_doc.pages[i]
-        page_tables = page.extract_tables()
-        #print("page number:", i)
-        #print("page tables:", page_tables)
-        
-        # if not page_tables:
-        #     page_errors[i+1] = f" No tables found on page {i+1}. Skipping..."
-        #     continue
+            first_row = page_tables[0][0]
+            
+            if contains_keyword(first_row, "Name & Address of employer for Whom the examination was made"):
+                process_table_type1(page_tables, extraction_info)
+            elif contains_keyword(first_row, "Date of Thorough Examination"):
+                process_table_type2(page_tables[0], extraction_info)
+            elif contains_keyword(first_row, "Name &AddressofManufacturer") or contains_keyword(first_row, "Name & Address of Manufacturer"):
+                process_table_type3(page_tables[0], extraction_info)
+            else:
+                page_errors[i+1] = f"No recognized table found on page {i+1}"
 
-        first_row = page_tables[0][0]
-        
-        if contains_keyword(first_row, "Name & Address of employer for Whom the examination was made"):
-            process_table_type1(page_tables, extraction_info)
-        elif contains_keyword(first_row, "Date of Thorough Examination"):
-            process_table_type2(page_tables[0], extraction_info)
-        elif contains_keyword(first_row, "Name &AddressofManufacturer") or contains_keyword(first_row, "Name & Address of Manufacturer"):
-            process_table_type3(page_tables[0], extraction_info)
-        else:
-            page_errors[i+1] = f"No recognized table found on page {i+1}"
+        except Exception as e:
+            page_errors[i+1] = f"Error occurred on page {i+1}: {e}"
+            print(f"Error occurred on page {i+1}: {e}")
 
-    except Exception as e:
-        page_errors[i+1] = f"Error occurred on page {i+1}: {e}"
-        print(f"Error occurred on page {i+1}: {e}")
-
-    # excel_management.create_excel(extraction_info, "../database/First Integrated.xlsx", "First_Integrated", page_errors)
+    excel_management.create_excel(extraction_info, "../database/First Integrated.xlsx", "First_Integrated", page_errors)
 
 
 def process_table_type1(page_tables, extraction_info):

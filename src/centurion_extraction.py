@@ -369,8 +369,8 @@ def extraction_centurion_pdf(pdf_path, i, page):
     # excel_management.create_excel(extraction_info, "database/Centurion.xlsx", "Centurion", page_errors)
 
 
-# if __name__ == "__main__":
-#     extraction_centurion_pdf("resources/CenturionLoft.pdf")
+if __name__ == "__main__":
+    extraction_centurion_pdf("resources/CenturionLoft.pdf")
 
 
 
