@@ -48,19 +48,23 @@ def process_swl(swl: str):
 
     # Match the pattern
     match = re.match(pattern, swl)
-
+    print("-------------")
     if match:
+        
         value_part = match.group(1)
-        unit_part = match.group(2)
-        note_part = match.group(3)
+        unit_part = match.group(3)
+        note_part = match.group(2)
+        print(value_part, unit_part, note_part)
     else:
         value_part = None
         unit_part = None
         note_part = swl
-    units_map = {"kgs": "kg"}
+    
+    units_map = {"kgs": "kg", "tonne":"ton"}
     if unit_part in units_map:
         unit_part = units_map[unit_part]
     # Check if part 2 is a unit type or not
+    
     units = ["kg", "g", "lb", "ton", "t", "m", "cm", "mm", "ft", "in", "m²", "cm²", "mm²", "ft²", "in²", "m³", "cm³", "mm³",
              "ft³", "in³", "km/h", "mph", "m/s", "kph", "°C", "°F", "°K", "bar", "atm", "Pa", "kPa", "psi", "N", "J",
              "W", "A", "V", "F", "Ω", "S", "H", "Hz", "C", "Bq", "Gy", "Sv", "cd", "lm", "lx", "B", "mol", "unit", "te"]
@@ -71,56 +75,65 @@ def process_swl(swl: str):
     return value_part, unit_part, note_part
 
 
-def get_identification_parts_list(input_string: str, quantity: int):
+def get_identification_parts_list(input_string: str):
     numeric_part = ''.join(filter(str.isdigit, input_string))
     part_list = list()
     if input_string[0].isdigit():
         alpha_part = input_string[len(numeric_part):]
-        for i in range(0, quantity):
+        for i in range(0):
             part_list.append(f"{int(numeric_part) + i}{alpha_part}")
     else:
         alpha_part = input_string[:len(input_string)-len(numeric_part)]
-        for i in range(0, quantity):
+        for i in range(0):
             part_list.append(f"{alpha_part}{int(numeric_part) + i}")
     return part_list
 
 
-def get_identification_number_list(identification_numbers: str, quantity: int):
-    #Take this as example (D971-1 to 6) or (MGL1 to MGL36)
-    if "to" in identification_numbers.lower():
-        # identification_number_first_part = D971-1 or MGL1
-        identification_number_first_part = identification_numbers.split("to")[0].strip()
-        # print(identification_number_first_part)
-        # example: D971-1
-        if "-" in identification_number_first_part:
-            # first_part = D971, second_part = 1
-            first_part, second_part = identification_number_first_part.split('-')
-            # print(first_part, second_part)
-            second_part_list = get_identification_parts_list(second_part, quantity)
-            # print(second_part_list)
-            identification_number_list = list()
-            for second_part in second_part_list:
-                identification_number_list.append(f"{first_part}-{second_part}")
-        else:
-            # example: MGL1
-            identification_number_list = get_identification_parts_list(identification_number_first_part, quantity)
-    elif re.search(r'x(\d+)', identification_numbers):
-        # print(identification_numbers)
-        identification_number_list = list()
-        for num in identification_numbers.split(','):
-            id_number = num.split('x')[0].strip()
-            for i in range(len(id_number)-1, -1, -1):
-                if id_number[i].isdigit():
-                    id_number= id_number[:i+1]
-                    break
-            count = int(''.join(filter(str.isdigit, num.split('x')[1].strip())))
-            for i in range(1,count+1):
-                identification_number_list.append(f"{id_number}-{i}")
-    elif "," in identification_numbers:
-        identification_number_list = identification_numbers.split(',')
+def get_identification_number_list(identification_numbers: str):
+    identification_number_list = list()
+    identification_number_list.append(identification_numbers)
 
-    # print(identification_number_list)
+    # #Take this as example (D971-1 to 6) or (MGL1 to MGL36)
+    # if "to" in identification_numbers.lower():
+    #     # identification_number_first_part = D971-1 or MGL1
+    #     identification_number_first_part = identification_numbers.split("to")[0].strip()
+    #     # print(identification_number_first_part)
+    #     # example: D971-1
+    #     if "-" in identification_number_first_part:
+    #         # first_part = D971, second_part = 1
+    #         first_part, second_part = identification_number_first_part.split('-')
+    #         # print(first_part, second_part)
+    #         second_part_list = get_identification_parts_list(second_part)
+    #         # print(second_part_list)
+    #         identification_number_list = list()
+    #         for second_part in second_part_list:
+    #             identification_number_list.append(f"{first_part}-{second_part}")
+    #     else:
+    #         # example: MGL1
+    #         identification_number_list = get_identification_parts_list(identification_number_first_part)
+    # elif re.search(r'x(\d+)', identification_numbers):
+    #     # print(identification_numbers)
+    #     identification_number_list = list()
+    #     for num in identification_numbers.split(','):
+    #         id_number = num.split('x')[0].strip()
+    #         for i in range(len(id_number)-1, -1, -1):
+    #             if id_number[i].isdigit():
+    #                 id_number= id_number[:i+1]
+    #                 break
+    #         count = int(''.join(filter(str.isdigit, num.split('x')[1].strip())))
+    #         for i in range(1,count+1):
+    #             identification_number_list.append(f"{id_number}-{i}")
+    # elif "," in identification_numbers:
+    #     identification_number_list = identification_numbers.split(',')
+
+    # # print(identification_number_list)
     return identification_number_list
+
+def providerIdentificationFinder(page):
+    text = page.extract_text().split(": ")
+    providerID = text[1][:10]
+    
+    return providerID
 
 def extractConUn(pdf_path, i):
     # try:
@@ -135,7 +148,7 @@ def extractConUn(pdf_path, i):
         if table_extract:
             print("page number:", i+1)
             page_tables = table_extract
-            # print(page_tables)
+            print(page_tables)
             table_data1 = page_tables[5][0]
             table_data2 = page_tables[2][0]
             table_data3 = page_tables[2][3]
@@ -151,7 +164,7 @@ def extractConUn(pdf_path, i):
             # print("-----------------------")
             # print(table_data2)
             print("-----------------------")
-            print(table_data3)
+            # print(table_data3)
             
             # print(table_data4, "before for")
             # print("-----------------------")
@@ -224,6 +237,12 @@ def extractConUn(pdf_path, i):
                 # report_number, date_of_examination, job_number, next_date_of__examination = None, None, None, None
 
                 table_data1_mapping = dict()
+                
+                providerID = providerIdentificationFinder(page)
+                table_data1_mapping["reportnumber"] = page_tables[0][0][2]
+                table_data1_mapping["dateofthoroughexamination"] = page_tables[0][1][2]
+                table_data1_mapping["duedateofnextthoroughexamination"] = page_tables[0][3][2]
+                table_data1_mapping["jobnumber"] = providerID
                 for data in table_data2:
                     try:
                         data_list = data.split(':')
@@ -232,7 +251,7 @@ def extractConUn(pdf_path, i):
                         table_data1_mapping[key] = value
                     except Exception as e:
                         print("Error extracting value from page:", e)
-
+                # print(table_data1_mapping)
                 if "reportnumber" not in table_data1_mapping:
                     errors.append("Certificate no not found")
                 else:
@@ -244,25 +263,25 @@ def extractConUn(pdf_path, i):
                 if "jobnumber" not in table_data1_mapping:
                     errors.append("Provider Identification not found")
                 else:
-                    page_info["Provider Identification"] = "LOFT-" + table_data1_mapping["jobnumber"]
+                    page_info["Provider Identification"] =  table_data1_mapping["jobnumber"]
                 if "duedateofnextthoroughexamination" not in table_data1_mapping:
                     errors.append("Next Inspection Due Date not found")
                 else:
                     page_info["Next Inspection Due Date"] = table_data1_mapping["duedateofnextthoroughexamination"]
 
                 # try:
-                # if identification_numbers:
-                #     identification_number_list = get_identification_number_list(identification_numbers,
-                #                                                                 quantity)
-                # else:
-                #     identification_number_list = list()
-                #     identification_number_list.append(identification_numbers)
-                # if errors:
-                #     errors.append("page no: "+str(i+1))
-                #     page_info["Errors"] = str(errors)
-                #     # print(identification_numbers, errors)
-                # for identification_number in identification_number_list:
-                #     extraction_info[identification_number] = page_info
+                print(identification_numbers)
+                if identification_numbers:
+                    identification_number_list = get_identification_number_list(identification_numbers)
+                else:
+                    identification_number_list = list()
+                    identification_number_list.append(identification_numbers)
+                if errors:
+                    errors.append("page no: "+str(i+1))
+                    page_info["Errors"] = str(errors)
+                    # print(identification_numbers, errors)
+                for identification_number in identification_number_list:
+                    extraction_info[identification_number] = page_info
                 # except Exception as e:
                 #     errors.append(
                 #         "Error in extracting identification numbers. So, appending the identification number as found in the page")
@@ -281,6 +300,7 @@ def extractConUn(pdf_path, i):
         #     print("Error", {e}, " occurred while processing the page:", i)
         print(extraction_info)
         print(len(extraction_info.keys()), page_errors.keys())
+        return(extraction_info)
     # except Exception as e:
     #     print("An error occurred:", e)    
         

@@ -71,55 +71,55 @@ def process_swl(swl: str):
     return value_part, unit_part, note_part
 
 
-def get_identification_parts_list(input_string: str, quantity: int):
+def get_identification_parts_list(input_string: str):
     numeric_part = ''.join(filter(str.isdigit, input_string))
     part_list = list()
     if input_string[0].isdigit():
         alpha_part = input_string[len(numeric_part):]
-        for i in range(0, quantity):
-            part_list.append(f"{int(numeric_part) + i}{alpha_part}")
+        part_list.append(f"{int(numeric_part)}{alpha_part}")
     else:
         alpha_part = input_string[:len(input_string)-len(numeric_part)]
-        for i in range(0, quantity):
-            part_list.append(f"{alpha_part}{int(numeric_part) + i}")
+        part_list.append(f"{alpha_part}{int(numeric_part)}")
     return part_list
 
 
-def get_identification_number_list(identification_numbers: str, quantity: int):
-    #Take this as example (D971-1 to 6) or (MGL1 to MGL36)
-    if "to" in identification_numbers.lower():
-        # identification_number_first_part = D971-1 or MGL1
-        identification_number_first_part = identification_numbers.split("to")[0].strip()
-        # print(identification_number_first_part)
-        # example: D971-1
-        if "-" in identification_number_first_part:
-            # first_part = D971, second_part = 1
-            first_part, second_part = identification_number_first_part.split('-')
-            # print(first_part, second_part)
-            second_part_list = get_identification_parts_list(second_part, quantity)
-            # print(second_part_list)
-            identification_number_list = list()
-            for second_part in second_part_list:
-                identification_number_list.append(f"{first_part}-{second_part}")
-        else:
-            # example: MGL1
-            identification_number_list = get_identification_parts_list(identification_number_first_part, quantity)
-    elif re.search(r'x(\d+)', identification_numbers):
-        # print(identification_numbers)
-        identification_number_list = list()
-        for num in identification_numbers.split(','):
-            id_number = num.split('x')[0].strip()
-            for i in range(len(id_number)-1, -1, -1):
-                if id_number[i].isdigit():
-                    id_number= id_number[:i+1]
-                    break
-            count = int(''.join(filter(str.isdigit, num.split('x')[1].strip())))
-            for i in range(1,count+1):
-                identification_number_list.append(f"{id_number}-{i}")
-    elif "," in identification_numbers:
-        identification_number_list = identification_numbers.split(',')
+def get_identification_number_list(identification_numbers: str):
+    identification_number_list = list()
+    identification_number_list.append(identification_numbers)
+    # #Take this as example (D971-1 to 6) or (MGL1 to MGL36)
+    # if "to" in identification_numbers.lower():
+    #     # identification_number_first_part = D971-1 or MGL1
+    #     identification_number_first_part = identification_numbers.split("to")[0].strip()
+    #     # print(identification_number_first_part)
+    #     # example: D971-1
+    #     if "-" in identification_number_first_part:
+    #         # first_part = D971, second_part = 1
+    #         first_part, second_part = identification_number_first_part.split('-')
+    #         # print(first_part, second_part)
+    #         second_part_list = get_identification_parts_list(second_part)
+    #         # print(second_part_list)
+            
+    #         for second_part in second_part_list:
+    #             identification_number_list.append(f"{first_part}-{second_part}")
+    #     else:
+    #         # example: MGL1
+    #         identification_number_list = get_identification_parts_list(identification_number_first_part)
+    # elif re.search(r'x(\d+)', identification_numbers):
+    #     # print(identification_numbers)
+        
+    #     for num in identification_numbers.split(','):
+    #         id_number = num.split('x')[0].strip()
+    #         for i in range(len(id_number)-1, -1, -1):
+    #             if id_number[i].isdigit():
+    #                 id_number= id_number[:i+1]
+    #                 break
+    #         count = int(''.join(filter(str.isdigit, num.split('x')[1].strip())))
+    #         for i in range(1,count+1):
+    #             identification_number_list.append(f"{id_number}-{i}")
+    # elif "," in identification_numbers:
+    #     identification_number_list = identification_numbers.split(',')
 
-    # print(identification_number_list)
+    # # print(identification_number_list)
     return identification_number_list
 
 def extractEner(pdf_path, i):
@@ -227,8 +227,13 @@ def extractEner(pdf_path, i):
                     errors.append(
                         "SWL not found in the page")
                 # report_number, date_of_examination, job_number, next_date_of__examination = None, None, None, None
-
+                print(page_tables)
                 table_data1_mapping = dict()
+                table_data1_mapping["reportnumber"] = page_tables[0][3][4][13:26]
+                table_data1_mapping["dateofthoroughexamination"] = page_tables[0][1][4][14:26]
+                table_data1_mapping["duedateofnextthoroughexamination"] = page_tables[1][1][-1]
+                table_data1_mapping["jobnumber"] = page_tables[1][1][1]
+                print(page_tables[1][1][1])
                 for data in table_data2:
                     try:
                         data_list = data.split(':')
@@ -256,9 +261,9 @@ def extractEner(pdf_path, i):
                     page_info["Next Inspection Due Date"] = table_data1_mapping["duedateofnextthoroughexamination"]
 
                 # try:
-                if identification_number:
-                    identification_number_list = get_identification_number_list(identification_numbers,
-                                                                                quantity)
+                # print("identification_numbers: ", identification_numbers)
+                if identification_numbers:
+                    identification_number_list = get_identification_number_list(identification_numbers)
                 else:
                     identification_number_list = list()
                     identification_number_list.append(identification_numbers)
@@ -284,8 +289,9 @@ def extractEner(pdf_path, i):
         # except Exception as e:
         #     page_errors[i+1] = "Error" + str(e) + " occurred while processing the page:"
         #     print("Error", {e}, " occurred while processing the page:", i)
-        print(extraction_info)
+        print("extract: ", extraction_info)
         print(len(extraction_info.keys()), page_errors.keys())
+        return(extraction_info)
     # except Exception as e:
     #     print("An error occurred:", e)    
         

@@ -364,7 +364,7 @@ def extraction_centurion_pdf(pdf_path, i, page):
         print("No verified company found")
     print(extraction_info)
     print(len(extraction_info.keys()))
-
+    return(extraction_info)
 
 
     # commented for now, so excel excuation will not affect

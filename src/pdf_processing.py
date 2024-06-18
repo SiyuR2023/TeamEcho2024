@@ -4,7 +4,7 @@ import centurion_extraction
 import first_integrated
 import EnerMech
 import controlUnion
-import re
+import excel_management
 
 def pdf_to_text(pdf_path):
     
@@ -37,11 +37,12 @@ def is_empty(text):
     return not bool(text.strip())
 
 def main():
+    extraction_info = {}
     # try: 
     # pdf_path = "../resources/First_Integrated.pdf"
     # pdf_path = "../resources/test.pdf"
-    # pdf_path = "../resources/EnerMech Example 1.pdf"
-    pdf_path = "../resources/Control Union Example 1.pdf"
+    pdf_path = "../resources/EnerMech Example 1.pdf"
+    # pdf_path = "../resources/Control Union Example 1.pdf"
     
     pdf = pdfplumber.open(pdf_path) #get the pdf file by path
     extraction_info = dict()
@@ -75,15 +76,15 @@ def main():
             print("No data in this page")
             continue
         elif found_keyword and found_keyword == "Sparrows":
-            sparrow_extraction.extract_sparrow_pdf(pdf_path, i)
+            extraction_info = sparrow_extraction.extract_sparrow_pdf(pdf_path, i)
         elif found_keyword and found_keyword == "Centurion":
-            centurion_extraction.extraction_centurion_pdf(pdf_path, i, page)
+            extraction_info = centurion_extraction.extraction_centurion_pdf(pdf_path, i, page)
         elif found_keyword == "EnerMech":
-            EnerMech.extractEner(pdf_path, i)
+            extraction_info = EnerMech.extractEner(pdf_path, i)
         elif found_keyword == "First Integrated":
-            first_integrated.extract_first_integrated_pdf(pdf_path, i)
+            extraction_info = first_integrated.extract_first_integrated_pdf(pdf_path, i)
         elif found_keyword == "Control Union":
-            controlUnion.extractConUn(pdf_path, i)
+            extraction_info = controlUnion.extractConUn(pdf_path, i)
         #     first_integrated.process_table_type1(page_tables, extraction_info)
         # elif found_keyword == "Date of Thorough Examination":
         #     first_integrated.process_table_type2(page_tables[0], extraction_info)
@@ -95,6 +96,7 @@ def main():
         #     first_integrated.extract_first_integrated_pdf(pdf_path)
         else:
             print(f"No matching keywords found")
+        excel_management.create_excel(extraction_info, "../database/test.xlsx", "mixed", page_errors)
     # except Exception as e:
     #         print("Error in processing the PDF")
 

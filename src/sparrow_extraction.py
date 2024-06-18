@@ -253,6 +253,7 @@ def extract_sparrow_pdf(pdf_path, i):
 
         print(len(extraction_info.keys()), page_errors.keys())
         print(extraction_info)
+        return(extraction_info)
         
         # commented so excel process will not be ruuned
         # excel_management.create_excel(extraction_info, "database/Sparrows.xlsx", "Sparrows", page_errors)
