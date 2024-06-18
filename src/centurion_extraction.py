@@ -5,6 +5,8 @@ from datetime import datetime
 
 import excel_management
 
+global extraction_info 
+extraction_info = dict()
 def get_manufacture_model(description: str):
     workbook = load_workbook("database/Full_list_of_Manufacturers_and_Models.xlsx")
     manufacturer_sheet = workbook['Manufacture']
@@ -153,7 +155,7 @@ def extraction_centurion_pdf(pdf_path, i, page):
     
     pdf = pdfplumber.open(pdf_path)
     
-    extraction_info = dict()
+    
     page_errors = dict()
     
     text = page.extract_text()
@@ -180,7 +182,7 @@ def extraction_centurion_pdf(pdf_path, i, page):
                 full_serials = ' '.join([item for item in table_data5 if item is not None])
                 errors = list()
                 identification_number_list = list()
-                print(first_table)
+               
             except Exception as e:
                 print("Error extracting format from page:", e)
            
@@ -360,7 +362,7 @@ def extraction_centurion_pdf(pdf_path, i, page):
 
     else:
         print("No verified company found")
-
+    print(extraction_info)
     print(len(extraction_info.keys()))
 
 

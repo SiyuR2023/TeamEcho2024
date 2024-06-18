@@ -3,6 +3,7 @@ import pdfplumber
 import centurion_extraction
 import first_integrated
 import EnerMech
+import controlUnion
 import re
 
 def pdf_to_text(pdf_path):
@@ -22,11 +23,11 @@ def search_keyword(text, keywords):
     text = text.split(',')
     
     for elem in text:
-        print(elem)
-        print("---------")
+        # print(elem)
+        # print("---------")
         for keyword in keywords:
-            print(keyword)
-            print("<<<<<<<<<<<")
+            # print(keyword)
+            # print("<<<<<<<<<<<")
             if keyword.lower() in elem.lower():
                 return keyword
     return None  # Return None if no keyword is found
@@ -37,16 +38,17 @@ def is_empty(text):
 
 def main():
     # try: 
-    pdf_path = "../resources/First_Integrated.pdf"
+    # pdf_path = "../resources/First_Integrated.pdf"
     # pdf_path = "../resources/test.pdf"
     # pdf_path = "../resources/EnerMech Example 1.pdf"
+    pdf_path = "../resources/Control Union Example 1.pdf"
     
     pdf = pdfplumber.open(pdf_path) #get the pdf file by path
     extraction_info = dict()
     page_errors = dict()
     text_content = pdf_to_text(pdf_path) #convert the pdf to string
     
-    keywords = ["Sparrows", "Centurion", "First Integrated", "Report Ref No", "EnerMech", "8EE"] #set up a list for keywords
+    keywords = ["Sparrows", "Centurion", "First Integrated", "Report Ref No", "EnerMech", "Control Union"] #set up a list for keywords
     
     for i, page in enumerate(pdf.pages): #loop the pdf files
         # text = page.extract_text() #extract each page's string 
@@ -80,6 +82,8 @@ def main():
             EnerMech.extractEner(pdf_path, i)
         elif found_keyword == "First Integrated":
             first_integrated.extract_first_integrated_pdf(pdf_path, i)
+        elif found_keyword == "Control Union":
+            controlUnion.extractConUn(pdf_path, i)
         #     first_integrated.process_table_type1(page_tables, extraction_info)
         # elif found_keyword == "Date of Thorough Examination":
         #     first_integrated.process_table_type2(page_tables[0], extraction_info)

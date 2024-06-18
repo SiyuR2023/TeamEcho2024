@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 from openpyxl import load_workbook
 import excel_management
 
-
+global extraction_info 
+extraction_info = dict()
 def split_id_numbers_with_range(id_numbers):
     new_id_numbers = []
     new_errors = list()
@@ -117,7 +118,7 @@ def add_six_months(date_str):
 def extract_first_integrated_pdf(pdf_path, i):
     print("<------------extracting first_integrated pdf------------>")
     pdf_doc = pdfplumber.open(pdf_path)
-    extraction_info = dict()
+    
     page_errors = dict()
 
     try:
@@ -296,6 +297,7 @@ def process_table_type1(page_tables, extraction_info):
 
     except Exception as e:
         print("Error occurred in process_table_type1:", e)
+    print(extraction_info)
 
 
 def process_table_type2(table, extraction_info):

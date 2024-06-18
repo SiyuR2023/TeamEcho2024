@@ -3,6 +3,8 @@ import pdfplumber
 from openpyxl import load_workbook
 import excel_management
 
+global extraction_info 
+extraction_info = dict()
 
 def get_manufacture_model(description: str):
     workbook = load_workbook("database/Full_list_of_Manufacturers_and_Models.xlsx")
@@ -113,7 +115,7 @@ def extract_sparrow_pdf(pdf_path, i):
     try:
         print("<------------extracting sparrow pdf------------>")
         pdf_doc = pdfplumber.open(pdf_path) #parameter: path of the pdf file and index of page
-        extraction_info = dict()
+        
         page_errors = dict()
     
         try:
@@ -127,7 +129,7 @@ def extract_sparrow_pdf(pdf_path, i):
                 table_data4 = page_tables[4]
                 identification_numbers = description = swl = quantity = None
                 errors = list()
-                print(table_data4)
+                
                 for index in range(0, len(table_data3)):
                     try:
                         if table_data3[index] is None:
@@ -250,7 +252,7 @@ def extract_sparrow_pdf(pdf_path, i):
             print("Error", {e}, " occurred while processing the page:", i)
 
         print(len(extraction_info.keys()), page_errors.keys())
-        
+        print(extraction_info)
         
         # commented so excel process will not be ruuned
         # excel_management.create_excel(extraction_info, "database/Sparrows.xlsx", "Sparrows", page_errors)

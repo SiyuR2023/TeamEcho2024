@@ -5,6 +5,9 @@ from datetime import datetime
 
 import excel_management
 
+global extraction_info 
+extraction_info = dict()
+
 def pdf_to_text(pdf_path):
     
     doc = pdfplumber.open(pdf_path)
@@ -123,7 +126,7 @@ def extractEner(pdf_path, i):
     # try:
         print("<------------extracting EnerMech pdf------------>")
         pdf_doc = pdfplumber.open(pdf_path) #parameter: path of the pdf file and index of page
-        extraction_info = dict()
+        
         page_errors = dict()
     
         # try:
@@ -253,18 +256,18 @@ def extractEner(pdf_path, i):
                     page_info["Next Inspection Due Date"] = table_data1_mapping["duedateofnextthoroughexamination"]
 
                 # try:
-                #     if quantity > 1:
-                #         identification_number_list = get_identification_number_list(identification_numbers,
-                #                                                                     quantity)
-                #     else:
-                #         identification_number_list = list()
-                #         identification_number_list.append(identification_numbers)
-                #     if errors:
-                #         errors.append("page no: "+str(i+1))
-                #         page_info["Errors"] = str(errors)
-                #         # print(identification_numbers, errors)
-                #     for identification_number in identification_number_list:
-                #         extraction_info[identification_number] = page_info
+                if identification_number:
+                    identification_number_list = get_identification_number_list(identification_numbers,
+                                                                                quantity)
+                else:
+                    identification_number_list = list()
+                    identification_number_list.append(identification_numbers)
+                if errors:
+                    errors.append("page no: "+str(i+1))
+                    page_info["Errors"] = str(errors)
+                    # print(identification_numbers, errors)
+                for identification_number in identification_number_list:
+                    extraction_info[identification_number] = page_info
                 # except Exception as e:
                 #     errors.append(
                 #         "Error in extracting identification numbers. So, appending the identification number as found in the page")
@@ -272,7 +275,7 @@ def extractEner(pdf_path, i):
                 #     print("Error in extracting identification numbers. So, appending the identification number as found in the page")
                 #     page_info["Errors"] = str(errors)
                 #     extraction_info[identification_numbers] = page_info
-                # # print(identification_numbers, page_info)
+                # print(identification_numbers, page_info)
             else:
                 page_errors[i+1] = "No identification numbers are found in the page. So, the page is not processed."
                 print("No identification number found")
@@ -281,7 +284,7 @@ def extractEner(pdf_path, i):
         # except Exception as e:
         #     page_errors[i+1] = "Error" + str(e) + " occurred while processing the page:"
         #     print("Error", {e}, " occurred while processing the page:", i)
-
+        print(extraction_info)
         print(len(extraction_info.keys()), page_errors.keys())
     # except Exception as e:
     #     print("An error occurred:", e)    
