@@ -1,14 +1,3 @@
-# urls.py
-# from django.urls import path
-# from . import views
-
-# urlpatterns = [    
-#     path('', views.home, name='home'),
-#     path('upload_pdf/', views.upload_pdf, name='upload_pdf'),
-#     path('select_coords/<int:pdf_id>/', views.select_coords, name='select_coords'),
-#     path('select_coords/<int:pdf_id>/<int:page_number>/', views.select_coords, name='select_coords_with_page'),
-# ]
-
 from django.urls import path
 from . import views
 
