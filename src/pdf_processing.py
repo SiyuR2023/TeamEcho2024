@@ -40,8 +40,8 @@ def main():
     extraction_info = {}
     # try: 
     # pdf_path = "../resources/First_Integrated.pdf"
-    # pdf_path = "../resources/test.pdf"
-    pdf_path = "../resources/EnerMech Example 1.pdf"
+    pdf_path = "../resources/test.pdf"
+    # pdf_path = "../resources/EnerMech Example 1.pdf"
     # pdf_path = "../resources/Control Union Example 1.pdf"
     
     pdf = pdfplumber.open(pdf_path) #get the pdf file by path
@@ -96,7 +96,7 @@ def main():
         #     first_integrated.extract_first_integrated_pdf(pdf_path)
         else:
             print(f"No matching keywords found")
-        excel_management.create_excel(extraction_info, "../database/test.xlsx", "mixed", page_errors)
+    excel_management.create_excel(extraction_info, "../database/test.xlsx", "mixed", page_errors)
     # except Exception as e:
     #         print("Error in processing the PDF")
 
