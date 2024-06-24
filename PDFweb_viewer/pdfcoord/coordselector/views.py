@@ -38,26 +38,27 @@ def upload_pdf(request):
                     saved_keywords.append(new_keyword)
                     with open(os.path.join(settings.MEDIA_ROOT, 'saved_keywords.json'), 'w') as f:
                         json.dump(saved_keywords, f, indent=4)
-                selected_keyword = new_keyword
+                selected_keyword = new_keyword #
+                
+            # Store the selected keyword in the session
+            request.session['selected_keyword'] = selected_keyword
 
             # Handle processing uploaded PDF
             if pdf_file and selected_keyword and action == 'upload':
+                # Save the uploaded PDF in the pdfs directory
+                pdfs_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
+                os.makedirs(pdfs_dir, exist_ok=True)
+                pdf_save_path = os.path.join(pdfs_dir, pdf_file.name)
+
+                # Save the PDF in chunks to handle large files
+                with open(pdf_save_path, 'wb') as pdf_out:
+                    for chunk in pdf_file.chunks():
+                        pdf_out.write(chunk)
+                
+                # Create and save PDFDocument
                 document = PDFDocument(file=pdf_file)
                 document.save()
-
-                # Handle copying final_coords.json
-                keyword_coords_dir = os.path.join(settings.MEDIA_ROOT, 'keyword_coords')
-                os.makedirs(keyword_coords_dir, exist_ok=True)
-
-                keyword_final_coords_path = os.path.join(keyword_coords_dir, f'{selected_keyword}_final_coords.json')
-
-                generic_final_coords_path = os.path.join(settings.MEDIA_ROOT, 'final_coords.json')
-                if os.path.exists(generic_final_coords_path):
-                    with open(generic_final_coords_path, 'r') as f:
-                        final_coords = json.load(f)
-                    with open(keyword_final_coords_path, 'w') as f:
-                        json.dump(final_coords, f, indent=4)
-
+                
                 return redirect('select_coords', pdf_id=document.id)  # Adjust as per your application
 
             # Handle processing existing keyword
@@ -71,14 +72,30 @@ def upload_pdf(request):
 
                     transfer_dir = os.path.join(settings.MEDIA_ROOT, 'transferred')
                     os.makedirs(transfer_dir, exist_ok=True)
+                    
+                    # Clear out the transferred directory before processing
+                    if os.path.exists(transfer_dir):
+                        for filename in os.listdir(transfer_dir):
+                            file_path = os.path.join(transfer_dir, filename)
+                            if os.path.isfile(file_path):
+                                os.unlink(file_path)                    
+                    
                     transfer_path = os.path.join(transfer_dir, f'{selected_keyword}_final_coords.json')
 
                     with open(transfer_path, 'w') as f:
                         json.dump(final_coords, f, indent=4)
 
-                    # Additional processing logic if needed
-                    # ...
+                    # Save the uploaded PDF
+                    pdf_file = request.FILES.get('pdf_file')
+                    if pdf_file:
+                        pdfs_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
+                        os.makedirs(pdfs_dir, exist_ok=True)
+                        pdf_save_path = os.path.join(pdfs_dir, pdf_file.name)
+                        with open(pdf_save_path, 'wb') as pdf_out:
+                            for chunk in pdf_file.chunks():
+                                pdf_out.write(chunk)
 
+                    # Additional processing logic if needed
                 else:
                     error_message = f'No final_coords.json found for the keyword "{selected_keyword}".'
                     return render(request, 'coordselector/upload_pdf.html', {'form': form, 'saved_keywords': saved_keywords, 'error_message': error_message})
@@ -219,11 +236,34 @@ def submit_coordinates(request, pdf_id):
 
             # Move final_json_file_path to the 'transferred' directory
             transfer_dir = os.path.join(settings.MEDIA_ROOT, 'transferred')
-            os.makedirs(transfer_dir, exist_ok=True)
+            if os.path.exists(transfer_dir):
+                for filename in os.listdir(transfer_dir):
+                    file_path = os.path.join(transfer_dir, filename)
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+            else:
+                os.makedirs(transfer_dir, exist_ok=True)
+
             transfer_path = os.path.join(transfer_dir, 'final_coords.json')
 
             with open(transfer_path, 'w') as f:
                 json.dump(coords_per_page, f, indent=4)
+
+            # Handle keyword-specific final_coords.json
+            keyword_coords_dir = os.path.join(settings.MEDIA_ROOT, 'keyword_coords')
+            os.makedirs(keyword_coords_dir, exist_ok=True)
+
+            # Retrieve the selected keyword from the session
+            selected_keyword = request.session.get('selected_keyword')
+            if selected_keyword:
+                keyword_final_coords_path = os.path.join(keyword_coords_dir, f'{selected_keyword}_final_coords.json')
+
+                generic_final_coords_path = os.path.join(settings.MEDIA_ROOT, 'final_coords.json')
+                if os.path.exists(generic_final_coords_path):
+                    with open(generic_final_coords_path, 'r') as f:
+                        final_coords = json.load(f)
+                    with open(keyword_final_coords_path, 'w') as f:
+                        json.dump(final_coords, f, indent=4)
 
             return JsonResponse({'status': 'success'})
         else:
