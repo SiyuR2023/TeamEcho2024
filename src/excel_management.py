@@ -1,6 +1,7 @@
 import openpyxl
 from openpyxl.styles import Font, Alignment, Border, Side
-
+import json
+import re
 
 column_mapping = {
     "Id Number": "A",
@@ -25,7 +26,8 @@ column_mapping = {
 
 
 def create_excel(extracted_data: dict, filename: str, client: str, page_errors: dict):
-    try:
+        
+    # try:
         print("<--------------Creating new excel------------------>")
         workbook = openpyxl.Workbook()  # Create a new Workbook
 
@@ -48,14 +50,29 @@ def create_excel(extracted_data: dict, filename: str, client: str, page_errors: 
             # Adjust column width to fit the header text
             column_width = max(len(header), 10)  # Set a minimum width of 10 characters
             sheet_data.column_dimensions[column].width = column_width
+        
+        
+        nameList = list(extracted_data.keys())  
+        print(nameList)
+       
+        row_idx = 3
 
-        # Write extracted data to the worksheet
-        for row_idx, (key, data) in enumerate(extracted_data.items(), start=3):
-            sheet_data.cell(row=row_idx, column=1, value=key)  # Write key in the first column
-            for cell_name, value in data.items():
-                column_name = column_mapping.get(cell_name)
+        for name in nameList:
+            if name == "SWL":
+                    swlVlaue = extracted_data.get(name)
+                    
+                    swlProcess(sheet_data, swlVlaue)
+            else:
+                column_name = column_mapping.get(name)  
                 if column_name:
-                    sheet_data.cell(row=row_idx, column=ord(column_name) - 64, value=value)
+                    row_idx = 3
+                    
+                    for val in extracted_data.get(name, []):
+                        if isinstance(val, str):  
+                            sheet_data.cell(row=row_idx, column=ord(column_name) - 64, value=val)
+                            row_idx += 1  
+
+       
 
         # Create a sheet for errors
         sheet_errors = workbook.create_sheet(title="Errors")  # Create a new worksheet
@@ -68,9 +85,44 @@ def create_excel(extracted_data: dict, filename: str, client: str, page_errors: 
         workbook.save(filename)  # Save the workbook with the provided filename
         workbook.close()
         print("<-------------- Excel created successfully ------------------>")
-    except Exception as e:
-        print(f"An error occurred in excel creation: {e}")
+    # except Exception as e:
+    #     print(f"An error occurred in excel creation: {e}")
+
+def swlProcess(sheet_data, swlValue):
+    
+    valPattern = r'\d+(?:\.\d+)?'
+    unitPattern = r'[a-zA-Z]+'
+    notePattern = r'[\s\n]+(\S.*)'
+    idx = 3
+    for val in swlValue:
+        if isinstance(val, str):
+            swlVal = re.findall(valPattern, val)[0]
+            print(swlVal)
+            sheet_data.cell(row=idx, column=ord("F") - 64, value=swlVal)
+            
+            swlUnit = re.findall(unitPattern, val)[0]
+            print(swlUnit)
+            sheet_data.cell(row=idx, column=ord("G") - 64, value=swlUnit)
+            
+            swlNote = re.findall(notePattern, val)
+            if(len(swlNote) > 0):
+                swlNote = swlNote[0]
+                sheet_data.cell(row=idx, column=ord("H") - 64, value=swlNote)
+            print(swlNote)
+            
+            idx += 1
+
+        
+
+
+def jsonProcess():
+   
+    with open('coords.json', 'r') as file:
+        data = json.load(file)
+    
+    return data
 
 
 if __name__ == "__main__":
-    create_excel(dict(), "output.xlsx", "Client Name", {"Page1": "Error1", "Page2": "Error2"})
+    data = jsonProcess()
+    create_excel(data, "output.xlsx", "Client Name", {"Page1": "Error1", "Page2": "Error2"})
