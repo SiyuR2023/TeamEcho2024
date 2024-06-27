@@ -56,6 +56,8 @@
 import unittest
 from unittest.mock import mock_open, patch
 import json
+import pdf_spliting
+
 
 # Assuming the load_search_results function is defined in a module named search_module
 # from search_module import load_search_results
