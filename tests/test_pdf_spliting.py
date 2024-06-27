@@ -53,5 +53,34 @@
 #     unittest.main()
 
 
-def test_load_search_results(json_path):
-    pass
+import unittest
+from unittest.mock import mock_open, patch
+import json
+
+# Assuming the load_search_results function is defined in a module named search_module
+# from search_module import load_search_results
+
+def load_search_results(json_path):
+    with open(json_path, 'r', encoding='utf-8') as file:
+        return json.load(file)
+
+class TestLoadSearchResults(unittest.TestCase):
+    def test_load_search_results(self):
+        # Sample JSON data
+        sample_data = {"key": "value"}
+        sample_json = json.dumps(sample_data)
+        
+        # Mock open to simulate file reading
+        with patch('builtins.open', mock_open(read_data=sample_json)) as mocked_file:
+            # Mock json.load to return the sample data
+            with patch('json.load', return_value=sample_data):
+                # Call the function
+                result = load_search_results('dummy_path.json')
+                
+                # Assertions
+                mocked_file.assert_called_once_with('dummy_path.json', 'r', encoding='utf-8')
+                self.assertEqual(result, sample_data)
+
+if __name__ == '__main__':
+    unittest.main()
+
