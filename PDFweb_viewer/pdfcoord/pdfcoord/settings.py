@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-hm)09=$l2493ld7xud#z_2f=)f1_xsg!@v=5bip+050i)epbr&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', 'testserver']
 
 
 # Application definition
@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'coordselector',
+    'pdfcoord.coordselector',
 ]
 
 MIDDLEWARE = [
@@ -59,7 +59,7 @@ CACHES = {
     }
 }
 
-ROOT_URLCONF = 'pdfcoord.urls'
+ROOT_URLCONF = 'pdfcoord.pdfcoord.urls'
 
 TEMPLATES = [
     {
@@ -77,7 +77,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'pdfcoord.wsgi.application'
+WSGI_APPLICATION = 'pdfcoord.pdfcoord.wsgi.application'
 
 
 # Database
