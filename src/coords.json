@@ -136,6 +136,8 @@
         "0.4t",
         "8t",
         "20t",
+        "100 tonne",
+
         {
             "completed": true
         }
@@ -324,6 +326,14 @@
         "YES",
         "YES",
         "YES",
+        {
+            "completed": true
+        }
+    ],
+
+    "Error Page":[
+         "Testing error one",
+        "another testing error",
         {
             "completed": true
         }

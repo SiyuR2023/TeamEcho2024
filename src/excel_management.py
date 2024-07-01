@@ -1,4 +1,5 @@
 import openpyxl
+from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 import json
 import re
@@ -24,10 +25,65 @@ column_mapping = {
     "Errors": "R"
 }
 
+def preProcess(sheet_data, column_mapping):
+    for header, column in column_mapping.items():
+            cell = sheet_data[column + '2']
+            cell.value = header
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal='center', vertical='center')  # Center align the text
+            cell.border = Border(bottom=Side(border_style='thin'))  # Add a thin border at the bottom
+
+            # Adjust column width to fit the header text
+            column_width = max(len(header), 10)  # Set a minimum width of 10 characters
+            sheet_data.column_dimensions[column].width = column_width
+
+def insertData(extracted_data, sheet_data):
+    nameList = list(extracted_data.keys())  
+    row_idx = 3
+    for name in nameList:
+        if name == "SWL":
+                swlVlaue = extracted_data.get(name)
+                swlProcess(sheet_data, swlVlaue)
+        
+        else:
+            column_name = column_mapping.get(name)  
+            if column_name:
+                row_idx = 3
+                
+                for val in extracted_data.get(name, []):
+                    if isinstance(val, str):  
+                        if column_name == "M" or column_name == "N":
+                            val = dateProcess(val)
+                        if column_name == "E":
+                            modelData = extracted_data.get(name)
+                            modelTuple = modelProcess(modelData)
+                            val = modelTuple[0]
+                            manu = modelTuple[1] 
+                            sheet_data.cell(row=row_idx, column=ord("I") - 64, value=manu)
+                        if column_name == "I":
+                            manuData = extracted_data.get(name)
+                            val = modelProcess(manuData)
+                        sheet_data.cell(row=row_idx, column=ord(column_name) - 64, value=val)
+                        row_idx += 1 
+
+
+def insertError(workbook, page_errors):
+    # Create a sheet for errors
+        sheet_errors = workbook.create_sheet(title="Errors")  # Create a new worksheet
+        sheet_errors.append(["No", "Error"])  # Write column headers
+
+        # Write errors to the worksheet
+        idx = 2
+        for value in page_errors:
+            if isinstance(value, str):
+                sheet_errors.cell(row=idx, column=ord("A") - 64, value=idx - 1)
+                sheet_errors.cell(row=idx, column=ord("B") - 64, value=value)
+            idx += 1
+            
 
 def create_excel(extracted_data: dict, filename: str, client: str, page_errors: dict):
         
-    # try:
+    try:
         print("<--------------Creating new excel------------------>")
         workbook = openpyxl.Workbook()  # Create a new Workbook
 
@@ -40,83 +96,78 @@ def create_excel(extracted_data: dict, filename: str, client: str, page_errors: 
         sheet_data['C1'] = "CreateLocations=No"
 
         # Write column headers for extracted data sheet
-        for header, column in column_mapping.items():
-            cell = sheet_data[column + '2']
-            cell.value = header
-            cell.font = Font(bold=True)
-            cell.alignment = Alignment(horizontal='center', vertical='center')  # Center align the text
-            cell.border = Border(bottom=Side(border_style='thin'))  # Add a thin border at the bottom
-
-            # Adjust column width to fit the header text
-            column_width = max(len(header), 10)  # Set a minimum width of 10 characters
-            sheet_data.column_dimensions[column].width = column_width
+        preProcess(sheet_data, column_mapping)
         
-        
-        nameList = list(extracted_data.keys())  
-        print(nameList)
-       
-        row_idx = 3
+        # Insert data from json 
+        insertData(extracted_data, sheet_data)
 
-        for name in nameList:
-            if name == "SWL":
-                    swlVlaue = extracted_data.get(name)
-                    
-                    swlProcess(sheet_data, swlVlaue)
-            else:
-                column_name = column_mapping.get(name)  
-                if column_name:
-                    row_idx = 3
-                    
-                    for val in extracted_data.get(name, []):
-                        if isinstance(val, str):  
-                            sheet_data.cell(row=row_idx, column=ord(column_name) - 64, value=val)
-                            row_idx += 1  
-
-       
-
-        # Create a sheet for errors
-        sheet_errors = workbook.create_sheet(title="Errors")  # Create a new worksheet
-        sheet_errors.append(["Page No", "Error"])  # Write column headers
-
-        # Write errors to the worksheet
-        for key, value in page_errors.items():
-            sheet_errors.append([key, value])  # Write key-value pairs as rows
+        # Insert error infomration
+        insertError(workbook, page_errors)
 
         workbook.save(filename)  # Save the workbook with the provided filename
         workbook.close()
         print("<-------------- Excel created successfully ------------------>")
-    # except Exception as e:
-    #     print(f"An error occurred in excel creation: {e}")
+    except Exception as e:
+       print(f"An error occurred in excel creation: {e}")
+
+def modelProcess(modelData):
+    workbook = load_workbook("database/Full_list_of_Manufacturers_and_Models.xlsx")
+    model_sheet = workbook['Model']
+    for row in model_sheet.iter_rows(min_row=2, values_only=True):
+        keyword = row[0]
+        value = row[1]
+        if keyword in modelData:
+            val = keyword
+            
+    return val, value
+
+def manuProcess(manuData):
+    workbook = load_workbook("database/Full_list_of_Manufacturers_and_Models.xlsx")
+    manufacturer_sheet = workbook['Manufacture']
+    for row in manufacturer_sheet.iter_rows(min_row=2, values_only=True):
+        keyword = row[0]
+        value = row[1]
+    if keyword in manuData:
+            val = value
+    return val
+
+
+
+def dateProcess(val):
+    pattern = r'\b\d{2}[-/](?:\d{2}|[A-Za-z]{3})[-/]\d{4}\b|[A-Za-z]+(?:\s+[A-Za-z]+)*'
+    val = re.findall(pattern, val)
+    if len(val) != 0:
+        val = val[0]
+    return val
+
 
 def swlProcess(sheet_data, swlValue):
     
     valPattern = r'\d+(?:\.\d+)?'
     unitPattern = r'[a-zA-Z]+'
     notePattern = r'[\s\n]+(\S.*)'
+    
     idx = 3
     for val in swlValue:
         if isinstance(val, str):
             swlVal = re.findall(valPattern, val)[0]
-            print(swlVal)
             sheet_data.cell(row=idx, column=ord("F") - 64, value=swlVal)
             
             swlUnit = re.findall(unitPattern, val)[0]
-            print(swlUnit)
+           
             sheet_data.cell(row=idx, column=ord("G") - 64, value=swlUnit)
             
             swlNote = re.findall(notePattern, val)
-            if(len(swlNote) > 0):
+           
+            if(len(swlNote) > 0) and (swlNote[0] != swlUnit):
                 swlNote = swlNote[0]
                 sheet_data.cell(row=idx, column=ord("H") - 64, value=swlNote)
-            print(swlNote)
-            
             idx += 1
 
         
 
 
 def jsonProcess():
-   
     with open('coords.json', 'r') as file:
         data = json.load(file)
     
@@ -125,4 +176,5 @@ def jsonProcess():
 
 if __name__ == "__main__":
     data = jsonProcess()
-    create_excel(data, "output.xlsx", "Client Name", {"Page1": "Error1", "Page2": "Error2"})
+    error_page = data.get("Error Page")
+    create_excel(data, "output.xlsx", "Client Name", error_page)
