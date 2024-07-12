@@ -1,8 +1,13 @@
 import unittest
 from unittest.mock import Mock, patch, MagicMock, mock_open
-
+import sys, os
 import json
 from openpyxl import Workbook
+
+# Add the directory containing excel_management.py to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'scripts')))
+
+
 from excel_management import (
     preProcess, insertData, insertError, create_excel,
     modelProcess, manuProcess, dateProcess, swlProcess, jsonProcess
