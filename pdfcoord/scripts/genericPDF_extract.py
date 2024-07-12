@@ -77,7 +77,7 @@ def extract_text_from_coordinates(pdf_path, coordinates_dict, companyName):
                     else:
                         extracted_texts.setdefault(keyword, []).append("Page number out of range.")
     if "\n(" in extracted_texts["Id Number"][0]:
-           firstInteProcess(extracted_texts)
+        firstInteProcess(extracted_texts)
     idProcess(extracted_texts)
     
     
@@ -185,7 +185,7 @@ def commaProcess(text):
 def only_contains_number(string):
     
     pattern = re.compile(r'^\d+$')
-   
+
     return bool(pattern.search(string))
 # split multiple id numbers if they have "to" in it and return a quantity for further processing
 
@@ -199,8 +199,7 @@ def toProcess(text):
     firstPart = None
     start = None
     secondPart = None
-    end = None
-    
+    end = None   
     
     if len(text.split(" to ")) > 1:
         firstPart = text.split(" to ")[0].strip()
@@ -209,7 +208,6 @@ def toProcess(text):
         firstPart = text.split("to")[0].strip()
         secondPart = text.split("to")[1].strip()
     
-   
     if only_contains_number(firstPart):
         if only_contains_number(secondPart):
             start = int(firstPart)
@@ -223,9 +221,6 @@ def toProcess(text):
     start = firstPart[fLen - 1]
     if "-" in firstPart:
         start = re.findall(r'-(\d+)', firstPart)[0]
-    
-    
-    
 
     if end != None:
         num = int(end) - int(start) + 1
@@ -235,9 +230,8 @@ def toProcess(text):
 # split multiple id numbers if they have "-" in it and return a quantity for further processing
 def dashProcess(text):
     if "218545" in text:
-       
         return 1
-   
+
     firstPart = text.split("-")[0].strip()
     secondPart = text.split("-")[1].strip()
     fLen= len(firstPart)
@@ -269,7 +263,7 @@ def get_identification_parts_list(input_string: str, quantity: int):
 
 # generating id numbers based on quantity and format
 def get_identification_number_list(identification_numbers: str, quantity: int):
-    
+        
     identification_number_list = list()
     #Take this as example (D971-1 to 6) or (MGL1 to MGL36)
     if "," in identification_numbers:
@@ -278,13 +272,11 @@ def get_identification_number_list(identification_numbers: str, quantity: int):
         # identification_number_first_part = D971-1 or MGL1
         identification_number_first_part = identification_numbers.split("to")[0].strip()
         # if "103123017"
-       
-       
         # example: D971-1
         if "-" in identification_number_first_part:
             # first_part = D971, second_part = 1
             first_part, second_part = identification_number_first_part.split('-')
-            print(quantity)
+            # print(quantity)
             second_part_list = get_identification_parts_list(second_part, quantity)
             
             
@@ -294,7 +286,7 @@ def get_identification_number_list(identification_numbers: str, quantity: int):
             # example: MGL1
             identification_number_list = get_identification_parts_list(identification_number_first_part, quantity)
     elif re.search(r'x(\d+)', identification_numbers):
-       
+    
         identification_number_list = list()
         for num in identification_numbers.split(','):
             id_number = num.split('x')[0].strip()

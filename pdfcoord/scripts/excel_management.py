@@ -132,7 +132,7 @@ def create_excel(extracted_data: dict, filename: str, client: str, page_errors: 
         print(f"An error occurred in excel creation: {e}")
 
 def modelProcess(modelData):
-    print(f"Processing model data '{modelData}' of type '{type(modelData)}'")
+    # print(f"Processing model data '{modelData}' of type '{type(modelData)}'")
     if not isinstance(modelData, str):
         modelData = str(modelData)  # Ensure modelData is a string
     workbook = load_workbook("database/Full_list_of_Manufacturers_and_Models.xlsx")

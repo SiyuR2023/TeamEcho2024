@@ -54,6 +54,18 @@
         #submit-coordinates:hover {
             background-color: #1E88E5; 
         }
+        #notification {
+            display: none;
+            padding: 10px;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+            color: #333;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -75,7 +87,6 @@
             <option value="SWL">SWL</option>
             <option value="Manufacturer">Manufacturer</option>
             <option value="Certificate No">Certificate No</option>
-            <option value="Page No with same Cert. No">Page No with same Cert. No</option>
             <option value="Location">Location</option>
             <option value="Detailed Location">Detailed Location</option>
             <option value="Previous Inspection">Previous Inspection</option>
@@ -106,6 +117,8 @@
     <br>
     <button id="upload-new-pdf" onclick="window.location.href='{% url 'upload_pdf' %}'">Upload New PDF</button>
     <button id="submit-coordinates">Submit Coordinates</button>
+
+    <div id="notification">Notification message</div>
 
     <script>
         const img = document.getElementById('pdf-page');
@@ -160,6 +173,15 @@
         });
     
         const processedKeywords = new Set();
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
     
         document.getElementById('save-coordinates').addEventListener('click', function() {
             const startPage = document.getElementById('start-page').value;
@@ -190,8 +212,12 @@
             .then(data => {
                 console.log(data);
                 coords = []; // Clear the coordinates array after saving
+                showNotification('Coordinates saved successfully!');
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Failed to save coordinates.');
+            });
         });
     
         document.getElementById('prev-page').addEventListener('click', function() {
@@ -225,8 +251,14 @@
                 }
             })
             .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error('Error:', error));
+            .then(data => {
+                console.log(data);
+                showNotification('Successfully submitted Coordinates for Processing!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Failed to submit coordinates.');
+            });
         });
     </script>
 </body>

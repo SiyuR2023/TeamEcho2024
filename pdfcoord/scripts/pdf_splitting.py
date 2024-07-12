@@ -63,7 +63,7 @@ def create_zip_file(output_dir, filenames):
 def clean_up_files(filenames):
     for file in filenames:
         os.remove(file)
-    print("Temporary files deleted.")
+    # print("Temporary files deleted.")
 
 if __name__ == "__main__":
     try:
