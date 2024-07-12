@@ -13,13 +13,18 @@ def extract_certificate_no(data):
     """
     extracted_data = {}
     certificate_no_key = "Certificate No"
+    seen_certificates = set()  # To track unique certificate numbers
 
     if certificate_no_key in data:
         certificate_list = data[certificate_no_key]
-        filtered_items = [item for item in certificate_list if isinstance(item, str)]
+        filtered_items = [item for item in certificate_list if isinstance(item, str) and item not in seen_certificates]
+
+        # filtered_items = [item for item in certificate_list if isinstance(item, str)]
         
         for index, certificate in enumerate(filtered_items, start=1):
-            extracted_data[str(index)] = [certificate]
+            if certificate not in seen_certificates:  # Check if the certificate number is unique
+                seen_certificates.add(certificate)  # Mark this certificate as seen
+                extracted_data[str(index)] = [certificate]
     
     return {"certificate no": extracted_data}
 

@@ -33,12 +33,15 @@ def process_pdf(pdf_id, pdf_path):
         if not os.path.isdir(script_dir):
             raise FileNotFoundError(f"The script directory does not exist at {script_dir}")
 
+        pdf_file_name = os.path.basename(pdf_path)  # Get the PDF file name
+
+        
         # Running the Python scripts in sequence
         scripts = [
             ('genericPDF_extract.py', [pdf_path, final_coords_path, generic_output_json]),
             ('extract_certNo.py', [generic_output_json, cert_no_output_json]),
             ('pdf_splitting.py', [pdf_path, cert_no_output_json, pdfPages_savedCert]),
-            ('excel_management.py', [generic_output_json, 'output.xlsx', 'Client Name', "Error Page"])
+            ('excel_management.py', [generic_output_json, 'output.xlsx', pdf_file_name, "Error Page"])
         ]
 
         for script_name, args in scripts:

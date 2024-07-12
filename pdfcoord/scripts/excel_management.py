@@ -56,7 +56,10 @@ def insertData(extracted_data, sheet_data, error_pages):
             column_name = column_mapping.get(name)
             if column_name and isinstance(values, list) and i < len(values):
                 val = values[i]
-                print(f"Processing column '{name}' with value '{val}' of type '{type(val)}'")
+                # Ensure that val is not an empty list
+                if isinstance(val, list): 
+                    val = "" if not val else val
+                # print(f"Processing column '{name}' with value '{val}' of type '{type(val)}'")
                 if not isinstance(val, str):  # Convert any non-string value to string
                     val = str(val)
                 if column_name == "M" or column_name == "N":
@@ -69,12 +72,18 @@ def insertData(extracted_data, sheet_data, error_pages):
                         sheet_data.cell(row=row_idx + i, column=ord("I") - 64, value=manu)
                 if 'Bounding box is outside the page bounds.' in val:
                     error_pages.append(f"Page {row_idx + i - 3}, Column {name}")
+                # print(f"Inserting value '{val}' into cell {column_name}{row_idx + i}")
+                if isinstance(val, list):
+                    val = ', '.join(map(str, val))  # Join list into a string
                 sheet_data.cell(row=row_idx + i, column=ord(column_name) - 64, value=val)
 
     # Process SWL separately
     if "SWL" in extracted_data:
         swlValue = extracted_data["SWL"]
         swlProcess(sheet_data, swlValue, row_idx, error_pages)
+
+
+
 
 def insertError(workbook, error_pages):
     if error_pages is None:
@@ -138,7 +147,7 @@ def modelProcess(modelData):
     return None
 
 def manuProcess(manuData):
-    print(f"Processing manufacturer data '{manuData}' of type '{type(manuData)}'")
+    # print(f"Processing manufacturer data '{manuData}' of type '{type(manuData)}'")
     if not isinstance(manuData, str):
         manuData = str(manuData)  # Ensure manuData is a string
     workbook = load_workbook("database/Full_list_of_Manufacturers_and_Models.xlsx")
@@ -153,7 +162,7 @@ def manuProcess(manuData):
     return None
 
 def dateProcess(val):
-    print(f"Processing date value '{val}' of type '{type(val)}'")
+    # print(f"Processing date value '{val}' of type '{type(val)}'")
     if not isinstance(val, str):
         val = str(val)
     pattern = r'\b\d{2}[-/](?:\d{2}|[A-Za-z]{3})[-/]\d{4}\b|[A-Za-z]+(?:\s+[A-Za-z]+)*'
@@ -175,7 +184,7 @@ def swlProcess(sheet_data, swlValue, start_row_idx, error_pages):
     for i, val in enumerate(swlValue):
         try:
             current_row_idx = start_row_idx + i
-            print(f"Processing SWL value '{val}' of type '{type(val)}' at row {current_row_idx}")
+            # print(f"Processing SWL value '{val}' of type '{type(val)}' at row {current_row_idx}")
             if val is None:
                 raise ValueError("SWL value is None")
             if not isinstance(val, str):  # Convert any non-string value to string

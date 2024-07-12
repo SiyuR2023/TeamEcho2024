@@ -11,6 +11,8 @@ from django.core.cache import cache
 import fitz  # PyMuPDF
 from .forms import UploadPDFForm
 from .tasks import process_pdf  # Import Celery 
+from django.contrib import messages
+
 
 def home(request):
     return render(request, 'coordselector/home.html')
@@ -46,64 +48,79 @@ def upload_pdf(request):
 
             # Handle processing uploaded PDF
             if pdf_file and selected_keyword and action == 'upload':
-                # Save the uploaded PDF in the pdfs directory
-                pdfs_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
-                os.makedirs(pdfs_dir, exist_ok=True)
-                pdf_save_path = os.path.join(pdfs_dir, pdf_file.name)
-
-                # Save the PDF in chunks to handle large files
-                with open(pdf_save_path, 'wb') as pdf_out:
-                    for chunk in pdf_file.chunks():
-                        pdf_out.write(chunk)
-                
-                # Create and save PDFDocument
-                document = PDFDocument(file=pdf_file)
-                document.save()
-                
-                return redirect('select_coords', pdf_id=document.id)  # Adjust as per your application
-
-            # Handle processing existing keyword
-            elif pdf_file and action == 'process' and selected_keyword:
-                keyword_coords_dir = os.path.join(settings.MEDIA_ROOT, 'keyword_coords')
-                keyword_final_coords_path = os.path.join(keyword_coords_dir, f'{selected_keyword}_final_coords.json')
-
-                if os.path.exists(keyword_final_coords_path):
-                    with open(keyword_final_coords_path, 'r') as f:
-                        final_coords = json.load(f)
-
-                    transfer_dir = os.path.join(settings.MEDIA_ROOT, 'transferred')
-                    os.makedirs(transfer_dir, exist_ok=True)
-                    
-                    # Clear out the transferred directory before processing
-                    if os.path.exists(transfer_dir):
-                        for filename in os.listdir(transfer_dir):
-                            file_path = os.path.join(transfer_dir, filename)
-                            if os.path.isfile(file_path):
-                                os.unlink(file_path)                    
-                    
-                    transfer_path = os.path.join(transfer_dir, f'final_coords.json')
-
-                    with open(transfer_path, 'w') as f:
-                        json.dump(final_coords, f, indent=4)
-
+                try:
                     # Save the uploaded PDF in the pdfs directory
                     pdfs_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
                     os.makedirs(pdfs_dir, exist_ok=True)
-                    pdf_path = os.path.join(pdfs_dir, pdf_file.name)
+                    pdf_save_path = os.path.join(pdfs_dir, pdf_file.name)
 
                     # Save the PDF in chunks to handle large files
-                    with open(pdf_path, 'wb') as pdf_out:
+                    with open(pdf_save_path, 'wb') as pdf_out:
                         for chunk in pdf_file.chunks():
                             pdf_out.write(chunk)
-                
+                    
                     # Create and save PDFDocument
                     document = PDFDocument(file=pdf_file)
                     document.save()
-                    pdf_id=document.id
                     
-                    process_pdf(pdf_id, pdf_path)
+                    return redirect('select_coords', pdf_id=document.id)  # Adjust as per your application
                     
-                    # Additional processing logic if needed
+                except PermissionError:
+                    messages.error(request, "You do not have permission to write to the directory.")
+                except FileNotFoundError:
+                    messages.error(request, "The specified file path was not found.")
+                except Exception as e:
+                    messages.error(request, f"An error occurred: {str(e)}")
+
+
+            # Handle processing existing keyword
+            elif pdf_file and action == 'process' and selected_keyword:
+                try:
+                    keyword_coords_dir = os.path.join(settings.MEDIA_ROOT, 'keyword_coords')
+                    keyword_final_coords_path = os.path.join(keyword_coords_dir, f'{selected_keyword}_final_coords.json')
+
+                    if os.path.exists(keyword_final_coords_path):
+                        with open(keyword_final_coords_path, 'r') as f:
+                            final_coords = json.load(f)
+
+                        transfer_dir = os.path.join(settings.MEDIA_ROOT, 'transferred')
+                        os.makedirs(transfer_dir, exist_ok=True)
+                        
+                        # Clear out the transferred directory before processing
+                        if os.path.exists(transfer_dir):
+                            for filename in os.listdir(transfer_dir):
+                                file_path = os.path.join(transfer_dir, filename)
+                                if os.path.isfile(file_path):
+                                    os.unlink(file_path)                    
+                        
+                        transfer_path = os.path.join(transfer_dir, f'final_coords.json')
+
+                        with open(transfer_path, 'w') as f:
+                            json.dump(final_coords, f, indent=4)
+
+                        # Save the uploaded PDF in the pdfs directory
+                        pdfs_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
+                        os.makedirs(pdfs_dir, exist_ok=True)
+                        pdf_path = os.path.join(pdfs_dir, pdf_file.name)
+
+                        # Save the PDF in chunks to handle large files
+                        with open(pdf_path, 'wb') as pdf_out:
+                            for chunk in pdf_file.chunks():
+                                pdf_out.write(chunk)
+                    
+                        # Create and save PDFDocument
+                        document = PDFDocument(file=pdf_file)
+                        document.save()
+                        pdf_id=document.id
+                        
+                        process_pdf(pdf_id, pdf_path)
+                    
+                except PermissionError:
+                    messages.error(request, "You do not have permission to write to the directory.")
+                except FileNotFoundError:
+                    messages.error(request, "The specified file path was not found.")
+                except Exception as e:
+                    messages.error(request, f"An error occurred: {str(e)}")
                 else:
                     error_message = f'No final_coords.json found for the keyword "{selected_keyword}".'
                     return render(request, 'coordselector/upload_pdf.html', {'form': form, 'saved_keywords': saved_keywords, 'error_message': error_message})
