@@ -59,7 +59,6 @@ def insertData(extracted_data, sheet_data, error_pages):
                 # Ensure that val is not an empty list
                 if isinstance(val, list): 
                     val = "" if not val else val
-                # print(f"Processing column '{name}' with value '{val}' of type '{type(val)}'")
                 if not isinstance(val, str):  # Convert any non-string value to string
                     val = str(val)
                 if column_name == "M" or column_name == "N":
@@ -71,8 +70,8 @@ def insertData(extracted_data, sheet_data, error_pages):
                         manu = modelTuple[1]
                         sheet_data.cell(row=row_idx + i, column=ord("I") - 64, value=manu)
                 if 'Bounding box is outside the page bounds.' in val:
-                    error_pages.append(f"Page {row_idx + i - 3}, Column {name}")
-                # print(f"Inserting value '{val}' into cell {column_name}{row_idx + i}")
+                    error_pages.append(f"Row {row_idx + i - 3}, Column {name}")
+                
                 if isinstance(val, list):
                     val = ', '.join(map(str, val))  # Join list into a string
                 sheet_data.cell(row=row_idx + i, column=ord(column_name) - 64, value=val)
@@ -81,8 +80,6 @@ def insertData(extracted_data, sheet_data, error_pages):
     if "SWL" in extracted_data:
         swlValue = extracted_data["SWL"]
         swlProcess(sheet_data, swlValue, row_idx, error_pages)
-
-
 
 
 def insertError(workbook, error_pages):
@@ -132,7 +129,6 @@ def create_excel(extracted_data: dict, filename: str, client: str, page_errors: 
         print(f"An error occurred in excel creation: {e}")
 
 def modelProcess(modelData):
-    # print(f"Processing model data '{modelData}' of type '{type(modelData)}'")
     if not isinstance(modelData, str):
         modelData = str(modelData)  # Ensure modelData is a string
     workbook = load_workbook("database/Full_list_of_Manufacturers_and_Models.xlsx")
@@ -147,7 +143,6 @@ def modelProcess(modelData):
     return None
 
 def manuProcess(manuData):
-    # print(f"Processing manufacturer data '{manuData}' of type '{type(manuData)}'")
     if not isinstance(manuData, str):
         manuData = str(manuData)  # Ensure manuData is a string
     workbook = load_workbook("database/Full_list_of_Manufacturers_and_Models.xlsx")
@@ -162,13 +157,8 @@ def manuProcess(manuData):
     return None
 
 def dateProcess(val):
-    # print(f"Processing date value '{val}' of type '{type(val)}'")
     if not isinstance(val, str):
         val = str(val)
-    pattern = r'\b\d{2}[-/](?:\d{2}|[A-Za-z]{3})[-/]\d{4}\b|[A-Za-z]+(?:\s+[A-Za-z]+)*'
-    val = re.findall(pattern, val)
-    if len(val) != 0:
-        val = val[0]
     return val
 
 
@@ -184,7 +174,7 @@ def swlProcess(sheet_data, swlValue, start_row_idx, error_pages):
     for i, val in enumerate(swlValue):
         try:
             current_row_idx = start_row_idx + i
-            # print(f"Processing SWL value '{val}' of type '{type(val)}' at row {current_row_idx}")
+            
             if val is None:
                 raise ValueError("SWL value is None")
             if not isinstance(val, str):  # Convert any non-string value to string
@@ -206,7 +196,7 @@ def swlProcess(sheet_data, swlValue, start_row_idx, error_pages):
                 swlNote = swlNote_matches[0]
                 sheet_data.cell(row=current_row_idx, column=ord("H") - 64, value=swlNote)
         except Exception as e:
-            error_message = f"Error processing SWL at Page {current_row_idx}: {e}"
+            error_message = f"Error processing SWL at Row {current_row_idx}: {e}"
             print(error_message)
             error_pages.append(error_message)
 

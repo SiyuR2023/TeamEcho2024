@@ -12,7 +12,7 @@ class TestPDFSplitting(unittest.TestCase):
     def setUp(self):
         self.pdf_path = "tests/test_media/sparrows.pdf"
         self.json_path = "tests/test_media/certNo_results.json"
-        self.output_dir = "output"
+        self.output_dir = "tests/output"
         self.search_results = {
             "1": {"1": ["Value1", "Value2"]},
             "2": {"2": ["Value3"]}

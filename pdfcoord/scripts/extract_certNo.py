@@ -19,8 +19,6 @@ def extract_certificate_no(data):
         certificate_list = data[certificate_no_key]
         filtered_items = [item for item in certificate_list if isinstance(item, str) and item not in seen_certificates]
 
-        # filtered_items = [item for item in certificate_list if isinstance(item, str)]
-        
         for index, certificate in enumerate(filtered_items, start=1):
             if certificate not in seen_certificates:  # Check if the certificate number is unique
                 seen_certificates.add(certificate)  # Mark this certificate as seen

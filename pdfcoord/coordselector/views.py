@@ -20,7 +20,7 @@ def home(request):
 
 def upload_pdf(request):
     saved_keywords = []
-
+    error_message = None
     # Load saved keywords from JSON file
     saved_keywords_path = os.path.join(settings.MEDIA_ROOT, 'saved_keywords.json')
     if os.path.exists(saved_keywords_path):
@@ -41,7 +41,10 @@ def upload_pdf(request):
                     saved_keywords.append(new_keyword)
                     with open(os.path.join(settings.MEDIA_ROOT, 'saved_keywords.json'), 'w') as f:
                         json.dump(saved_keywords, f, indent=4)
-                selected_keyword = new_keyword #
+                    selected_keyword = new_keyword     
+                else:
+                    error_message = messages.error(request, "The name has been used already.")       
+                
                 
             # Store the selected keyword in the session
             request.session['selected_keyword'] = selected_keyword
@@ -63,8 +66,8 @@ def upload_pdf(request):
                     document = PDFDocument(file=pdf_file)
                     document.save()
                     
-                    return redirect('select_coords', pdf_id=document.id)  # Adjust as per your application
-                    
+                    return redirect('select_coords', pdf_id=document.id)  
+                
                 except PermissionError:
                     messages.error(request, "You do not have permission to write to the directory.")
                 except FileNotFoundError:

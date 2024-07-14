@@ -4,7 +4,7 @@ import json
 import pdfplumber
 import sys
 import re
-def extract_text_from_coordinates(pdf_path, coordinates_dict, companyName):
+def extract_text_from_coordinates(pdf_path, coordinates_dict):
     """
     Extracts text from specified areas on specific pages in a PDF.
 
@@ -45,7 +45,7 @@ def extract_text_from_coordinates(pdf_path, coordinates_dict, companyName):
                                 # processing id number speical cases
                                 if keyword == "Id Number":
                                     num = 0
-                                # comment this if condition if it does not work
+                                
                                     if "," in text:
                                         num = commaProcess(text)
                                         
@@ -55,10 +55,12 @@ def extract_text_from_coordinates(pdf_path, coordinates_dict, companyName):
                                     elif "-" in text:
                                         num = dashProcess(text)
                                     
-                                    print(num)
+                                    if num > 10000:  # Arbitrary large number to prevent excessive memory usage
+                                        print(f"Warning: Skipping large quantity {num} for text: {text}")
+                                        continue
+                                    
                                     temp = get_identification_number_list(text, num)
-                                    
-                                    
+                                                                        
                                     idNumList.extend(temp)
                                     
                                     # the id number on the page is multiple, need to be expanded
@@ -79,9 +81,23 @@ def extract_text_from_coordinates(pdf_path, coordinates_dict, companyName):
     if "\n(" in extracted_texts["Id Number"][0]:
         firstInteProcess(extracted_texts)
     idProcess(extracted_texts)
-    
+    nextLineProcess(extracted_texts)
     
     return extracted_texts
+
+def nextLineProcess(extracted_texts):
+    
+    for key, value in extracted_texts.items():
+        if key != ["Certificate No"] or key != ["SWL"]:
+            newList = []
+            for ele in value:
+                if ele != None:
+                    if '\n' in ele:
+                        ele = ele.replace('\n', ' ')
+                        newList.append(ele)
+                    else:
+                        newList.append(ele)
+            extracted_texts[key] = newList
 
 # method of processing one of First Integrated format
 def firstInteProcess(extracted_texts):
@@ -133,7 +149,8 @@ def idProcess(extracted_texts):
         idNum = idNumList[i]
         if idNum != None and  "Below:" in idNum:
             start -= deleted
-            count = int(idNum.split("Below:")[1]) 
+            count = int(re.findall(r'\d+', idNum.split("Below:")[1])[0])
+            # count = int(idNum.split("Below:")[1]) 
             idxDict.update({start : count})
 
         i += 1
@@ -141,26 +158,32 @@ def idProcess(extracted_texts):
     insertData(idxDict, extracted_texts)
     # delete incorrect format of id Number
     processFormat(idNumList, extracted_texts)
-    
-        
+
 # delete and rewrite id number with wrong format
 def processFormat(idNumList, extracted_texts):
     new_idNumList = []
     for idNum in idNumList:
         if idNum != None:
             match = re.findall(r'x(\d+)', idNum)
-            if "," in idNum or match or "Below:" in idNum or "to" in idNum or " - " in idNum or ("-" in idNum and "TZW" in idNum):
+            secMatch = re.match(r'([A-Za-z]+\d+/?\d*)/(\d+)-(\d+)', idNum)
+            thirdMatch = re.findall(r'\d{2}[A-Z]{2}\d-\d', idNum)
+            if match or secMatch or thirdMatch or specialCase(idNum):
                 continue  # Skip this idNum if it matches the condition
         new_idNumList.append(idNum)
     extracted_texts["Id Number"] = new_idNumList
 
+def specialCase(idNum):
+    cases = [",", "Below:", "to", " - " ]
+    for ele in cases:
+        if ele in idNum:
+            return True
+    return False
 
 # insert data based on index of id number
 # ensure that each header's content is at correct postion after processing id number
 def insertData(idxDict, extracted_texts):
     
     nameList = []
-    
     for key, value in extracted_texts.items():
         if key != "Id Number":
             nameList.append(key)
@@ -190,12 +213,7 @@ def only_contains_number(string):
 # split multiple id numbers if they have "to" in it and return a quantity for further processing
 
 def toProcess(text):
-    
-    # special cases, I do not like hardcoding :(
-    # if "084054" in text or "083499" in text or "046588" in text:
-    #     return 2
-    # elif "103123017" in text:
-    #     return 20
+
     firstPart = None
     start = None
     secondPart = None
@@ -227,27 +245,24 @@ def toProcess(text):
     else:
         return 1
     return num
+
 # split multiple id numbers if they have "-" in it and return a quantity for further processing
 def dashProcess(text):
-    if "218545" in text:
-        return 1
 
     firstPart = text.split("-")[0].strip()
     secondPart = text.split("-")[1].strip()
-    fLen= len(firstPart)
-    sLen = len(secondPart)
-    print(firstPart)
-    print(secondPart)
     start = re.findall(r'\d+', firstPart)[0]
     end = re.findall(r'(\d+)', secondPart)[0]
-
-    print(start)
-    print(end)
     num = int(end) - int(start) + 1
     
     return num
 
 def get_identification_parts_list(input_string: str, quantity: int):
+    
+    if quantity > 10000:  # Arbitrary large number to prevent excessive memory usage
+        print(f"Warning: Skipping large quantity {quantity} for input string: {input_string}")
+        return []
+    
     numeric_part = ''.join(filter(str.isdigit, input_string))
     part_list = list()
     if input_string[0].isdigit():
@@ -261,6 +276,19 @@ def get_identification_parts_list(input_string: str, quantity: int):
             part_list.append(f"{alpha_part}{int(numeric_part) + i}")
     return part_list
 
+def checkMulti(identification_numbers, newList):
+    
+    for num in identification_numbers.split(','):
+        id_number = num.split('x')[0].strip()
+        for i in range(len(id_number)-1, -1, -1):
+            if id_number[i].isdigit():
+                id_number= id_number[:i+1]
+                break
+        count = int(''.join(filter(str.isdigit, num.split('x')[1].strip())))
+        for i in range(1,count+1):
+            newList.append(f"{id_number}-{i}")
+    return newList
+
 # generating id numbers based on quantity and format
 def get_identification_number_list(identification_numbers: str, quantity: int):
         
@@ -268,17 +296,20 @@ def get_identification_number_list(identification_numbers: str, quantity: int):
     #Take this as example (D971-1 to 6) or (MGL1 to MGL36)
     if "," in identification_numbers:
         identification_number_list = identification_numbers.split(',')
+        if re.search(r'x(\d+)', identification_numbers):
+            newList = []
+            identification_number_list = checkMulti(identification_numbers, newList)
+    
     elif "to" in identification_numbers.lower():
         # identification_number_first_part = D971-1 or MGL1
         identification_number_first_part = identification_numbers.split("to")[0].strip()
-        # if "103123017"
+    
         # example: D971-1
         if "-" in identification_number_first_part:
             # first_part = D971, second_part = 1
             first_part, second_part = identification_number_first_part.split('-')
             # print(quantity)
             second_part_list = get_identification_parts_list(second_part, quantity)
-            
             
             for second_part in second_part_list:
                 identification_number_list.append(f"{first_part}-{second_part}")
@@ -306,8 +337,6 @@ def get_identification_number_list(identification_numbers: str, quantity: int):
             range_start = int(match.group(2))
             range_end = int(match.group(3))
             if range_end < range_start:
-                
-        
                 identification_number_list.append(f"{prefix_alpha}{range_start}")
             else:
                 for i in range(range_start, range_end + 1):
@@ -336,7 +365,6 @@ def get_identification_number_list(identification_numbers: str, quantity: int):
             
                 identification_number_list = [
                     f"{prefix_part}{i}" for i in range(start_number, end_number + 1)]
-
     
     return identification_number_list
 
@@ -358,7 +386,7 @@ if __name__ == "__main__":
     with open(coordinates_json_path, 'r', encoding='utf-8') as f:
         coordinates_dict = json.load(f)
 
-    extracted_texts = extract_text_from_coordinates(pdf_path, coordinates_dict, "First Integrated")
+    extracted_texts = extract_text_from_coordinates(pdf_path, coordinates_dict)
     
     save_results_to_file(extracted_texts, output_json_file)
     print(f"Extracted texts saved to '{output_json_file}'")

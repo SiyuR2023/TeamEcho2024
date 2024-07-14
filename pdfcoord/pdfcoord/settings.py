@@ -54,8 +54,8 @@ MIDDLEWARE = [
 # settings.py
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',  # Example using local memory cache
-        'TIMEOUT': 3600,  # Cache timeout in seconds (1 hour in this example)
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',  
+        'TIMEOUT': 3600,  # Cache timeout in seconds (1 hour)
     }
 }
 

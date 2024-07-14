@@ -8,9 +8,7 @@ import os
 @shared_task
 def process_pdf(pdf_id, pdf_path):
     try:
-        # print(f"Processing PDF with ID: {pdf_id}")
         document = PDFDocument.objects.get(pk=pdf_id)
-        # print("PDF path retrieved from database:", pdf_path)
 
         final_coords_path = os.path.join(settings.MEDIA_ROOT, 'transferred', 'final_coords.json')
         generic_output_json = os.path.join(settings.MEDIA_ROOT, 'outputs', 'genericSearch_results.json')
@@ -23,10 +21,6 @@ def process_pdf(pdf_id, pdf_path):
         # Paths
         python_exe = os.path.join(settings.BASE_DIR, 'env', 'Scripts', 'python.exe')
         script_dir = os.path.join(settings.BASE_DIR, 'scripts')
-
-        # Confirm paths before execution
-        # print("Python executable:", python_exe)
-        # print("Script directory:", script_dir)
 
         if not os.path.exists(python_exe):
             raise FileNotFoundError(f"The Python executable does not exist at {python_exe}")
@@ -54,10 +48,6 @@ def process_pdf(pdf_id, pdf_path):
                 [python_exe, script_path] + args, 
                 text=True, capture_output=True, check=True
             )
-            if result.stdout:
-                print(f"Output of {script_name}: {result.stdout}")
-            if result.stderr:
-                print(f"Error of {script_name}: {result.stderr}")
 
     except subprocess.CalledProcessError as e:
         print(f"Subprocess failed with return code {e.returncode}")
