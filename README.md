@@ -7,7 +7,7 @@ These improvements aim to create a more robust, scalable, and user-friendly syst
 
 ## Features of Our Project:
 
-PDF Processing: Our application leverages the Pdfplumber library to meticulously extract text, images, and tables from PDF documents, tailored specifically for efficient data retrieval and management within our Django-based UI. This integration allows for a seamless extraction process directly from the user interface.
+PDF Processing: Our application leverages the Pdfplumber library to meticulously extract text from PDF documents, tailored specifically for efficient data retrieval and management within our Django-based UI. This integration allows for a seamless extraction process directly from the user interface.
 
 Excel File Creation: As part of our data processing workflow, we generate Excel files to organize and store extracted data. This functionality remains integral to our system, providing users with easy access to analyzed and structured data for further manipulation and review.
 
@@ -42,6 +42,7 @@ All the packages and libraries required for this application to run can be found
          cd pdfcoord/
          pyenv local 3.10.7 # This sets the local version of Python to 3.10.7 (Optional)
          source env/bin/activate # This activates the virtual environment
+         source env/Scripts/activate # For window os
 
          ```
 
