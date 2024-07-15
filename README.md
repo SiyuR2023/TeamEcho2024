@@ -41,7 +41,6 @@ All the packages and libraries required for this application to run can be found
          ``` bash
          cd pdfcoord/
          pyenv local 3.10.7 # This sets the local version of Python to 3.10.7 (Optional)
-         python3 -m venv env # This creates the virtual environment
          source env/bin/activate # This activates the virtual environment
 
          ```
