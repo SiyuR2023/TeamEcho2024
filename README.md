@@ -36,12 +36,14 @@ All the packages and libraries required for this application to run can be found
       ``` bash
       git clone https://github.com/SiyuR2023/TeamEcho2024.git
       ```
-   2. Use these commands to set things up, this assumes a linux operating system:
-      Set up and activate the virtual environment. Navigate to the project folder and execute the following commands in the terminal:
+   or extract the folder with the codebase if you have the zipped folder.
+   2. Use these commands to set things up:
+      Ensures you have python installed and properly configured in your IDE.
+      Set up and activate the virtual environment as the same level as the 'manage.py file'. Navigate to the project folder (pdfcoord)- cd TeamEcho2024/pdfcoord and execute the following commands in the terminal:
          ``` bash
-         cd pdfcoord/
          pyenv local 3.10.7 # This sets the local version of Python to 3.10.7 (Optional)
-         source env/bin/activate # This activates the virtual environment
+         python -m venv env
+         source env/bin/activate # This activates the virtual environment for mac os
          source env/Scripts/activate # For window os
 
          ```
@@ -50,8 +52,9 @@ All the packages and libraries required for this application to run can be found
          ```
          pip install -r requirements.txt
          ```
-   4. start the server by running the command for codio sand-box:
+   4. start the server by running the command and also run migration:
          ```bash
+         python manage.py migrate
          python3 manage.py runserver # on local machine
          ```
    5. Launch the application to your browser at this IP http://127.0.0.1:8000/    
