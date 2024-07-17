@@ -54,12 +54,12 @@ All the packages and libraries required for this application to run can be found
    4. start the server by running the command and also run migration:
          ```bash
          python manage.py migrate
-         python3 manage.py runserver # on local machine
+         python manage.py runserver # on local machine
          ```
    5. Launch the application to your browser at this IP http://127.0.0.1:8000/    
 
 ## Testing the build
-To test the build please run the following commands.
+To test the build deactivate the server (ctrl + C) and run the following commands.
 ```bash
 pytest
 ```
