@@ -74,7 +74,7 @@ After specifying all the desired extraction areas, submit these coordinates for 
 The application provides a streamlined process from the initial upload to the final retrieval of organized data, enhancing efficiency and user experience. Access your processed Excel outputs and corresponding PDF pages directly through the application’s interface.
 
 ## Deployment
-This application supports AWS deployment by leveraging AWS EC2 service's serverless architecture, and currently deployed at http://54.225.210.49/. Please refer to the deployment.md file in the pdfcoord dir to know more about AWS deployment.
+This application supports AWS deployment by leveraging AWS EC2 service's serverless architecture, and currently deployed at http://54.225.210.49/. Please refer to the deployment.md file in the production dir to know more about AWS deployment.
 
 ## Team Members
 - SAMUEL AMAO
