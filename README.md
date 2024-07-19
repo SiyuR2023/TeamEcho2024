@@ -43,7 +43,9 @@ All the packages and libraries required for this application to run can be found
       ``` bash
       python -m venv env
       source env/bin/activate # This activates the virtual environment for mac os
-      source env/Scripts/activate # For window os
+      source env/Scripts/activate # For git bash
+      env/Scripts/Activate.ps1 # For PowerShell
+      env/Scripts/activate.bat # For cmd.exe
 
       ```
 
