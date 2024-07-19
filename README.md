@@ -55,6 +55,7 @@ All the packages and libraries required for this application to run can be found
          ```bash
          python manage.py migrate
          python manage.py runserver # on local machine
+         python manage.py runserver 0.0.0.0:8000 #for Codio Sandbox
          ```
    5. Launch the application to your browser at this IP http://127.0.0.1:8000/    
 
